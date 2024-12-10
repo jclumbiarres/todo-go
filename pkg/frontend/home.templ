@@ -1,0 +1,105 @@
+package frontend
+
+import (
+	"lumbi.net/practice/todo-go/internal/model"
+	"strconv"
+)
+
+templ Layout(todos []model.Todo) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<script src="/static/htmx.min.js"></script>
+			<title>To Do</title>
+		</head>
+		<main id="contenedor">
+			@TodoList(todos)
+		</main>
+	</html>
+}
+
+templ Link(path string, target string, desc string) {
+	<a href hx-get={ path } hx-target={ target }>{ desc }</a>
+}
+
+templ TodoList(todos []model.Todo) {
+	<div class="container max-h-full mx-auto max-w-md mt-10 p-4 bg-white rounded-lg shadow-md">
+		<h1 class="text-2xl font-bold mb-4 text-center">Todo List</h1>
+		<form hx-post="/todos" hx-target="#listaTodos" hx-swap="beforeend" class="flex mb-4">
+			<input
+				type="text"
+				name="todo"
+				placeholder="Nueva tarea"
+				class="flex-grow p-2 border rounded-l-md"
+			/>
+			<button
+				type="submit"
+				class="bg-blue-500 text-white p-2 rounded-r-md hover:bg-blue-600"
+			>
+				Añadir
+			</button>
+		</form>
+		@List(todos)
+	</div>
+}
+
+templ List(todos []model.Todo) {
+	<ul id="listaTodos">
+		for _, todo := range todos {
+			<li
+				id={ "todo-" + strconv.Itoa(int(todo.ID)) }
+				class={ "p-2 border-b hover:bg-gray-100" }
+			>
+				<span class={ templ.KV("line-through", todo.Completed) }>
+					{ todo.Title }
+				</span>
+				<button
+					hx-delete={ "/todos/delete/" + strconv.Itoa(int(todo.ID)) }
+					hx-target={ "#todo-" + strconv.Itoa(int(todo.ID)) }
+					hx-swap="outerHTML"
+					class="float-right text-red-500 hover:text-red-700 mr-1"
+				>
+					&#10005;
+				</button>
+				<button
+					hx-patch={ "/todos/update/" + strconv.Itoa(int(todo.ID)) }
+					hx-target={ "#todo-" + strconv.Itoa(int(todo.ID)) }
+					hx-swap="outerHTML"
+					class="float-right text-green-500 hover:text-green-700 mr-1"
+				>
+					&#10003;
+				</button>
+			</li>
+		}
+	</ul>
+}
+
+templ TodoItem(todo model.Todo) {
+	<li
+		id={ "todo-" + strconv.Itoa(int(todo.ID)) }
+		class={ "p-2 border-b hover:bg-gray-100" }
+	>
+		<span class={ templ.KV("line-through", todo.Completed) }>
+			{ todo.Title }
+		</span>
+		<button
+			hx-delete={ "/todos/delete/" + strconv.Itoa(int(todo.ID)) }
+			hx-target={ "#todo-" + strconv.Itoa(int(todo.ID)) }
+			hx-swap="outerHTML"
+			class="float-right text-red-500 hover:text-red-700 mr-1"
+		>
+			&#10005;
+		</button>
+		<button
+			hx-patch={ "/todos/update/" + strconv.Itoa(int(todo.ID)) }
+			hx-target={ "#todo-" + strconv.Itoa(int(todo.ID)) }
+			hx-swap="outerHTML"
+			class="float-right text-green-500 hover:text-green-700 mr-1"
+		>
+			&#10003;
+		</button>
+	</li>
+}
